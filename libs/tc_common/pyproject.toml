@@ -1,0 +1,14 @@
+[project]
+name = "tc-common"
+version = "0.1.0"
+description = "Shared errors and HTTP problem responses for trawellcare services"
+requires-python = ">=3.12"
+dependencies = ["fastapi>=0.115"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tc_common*"]

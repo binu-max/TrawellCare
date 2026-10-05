@@ -1,0 +1,28 @@
+# Environment and secrets (never commit)
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+credentials.json
+*credentials*
+
+# Local docs (not pushed to GitHub)
+docs/
+
+# Python / uv
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,22 @@
+[project]
+name = "travelcare"
+version = "0.1.0"
+description = "trawellcare Python workspace"
+requires-python = ">=3.12"
+dependencies = [
+    "integration",
+]
+
+[tool.uv.sources]
+integration = { workspace = true }
+
+[tool.uv.workspace]
+members = ["libs/tc_common", "services/integration"]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[dependency-groups]
+dev = [
+    "integration[dev]",
+]

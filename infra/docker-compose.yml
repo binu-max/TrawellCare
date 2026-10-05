@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: trawellcare
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d trawellcare"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  integration:
+    build:
+      context: ..
+      dockerfile: services/integration/Dockerfile
+    ports:
+      - "8004:8004"
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://integration_user:integration@postgres:5432/trawellcare
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "cd /app/services/integration &&
+             alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8004"
+
+  integration-worker:
+    build:
+      context: ..
+      dockerfile: services/integration/Dockerfile
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://integration_user:integration@postgres:5432/trawellcare
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      integration:
+        condition: service_started
+    command: ["python", "-m", "app.worker"]
+    working_dir: /app/services/integration
+
+volumes:
+  pgdata:
