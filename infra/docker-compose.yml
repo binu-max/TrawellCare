@@ -42,6 +42,40 @@ services:
              alembic upgrade head &&
              uvicorn app.main:app --host 0.0.0.0 --port 8004"
 
+  platform:
+    build:
+      context: ..
+      dockerfile: services/platform/Dockerfile
+    ports:
+      - "8001:8001"
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://integration_user:integration@postgres:5432/trawellcare
+      OTP_DELIVERY: integration
+      INTEGRATION_BASE_URL: http://integration:8004
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "cd /app/services/platform &&
+             alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8001"
+
+  platform-worker:
+    build:
+      context: ..
+      dockerfile: services/platform/Dockerfile
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://integration_user:integration@postgres:5432/trawellcare
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["python", "-m", "app.worker"]
+    working_dir: /app/services/platform
+
   integration-worker:
     build:
       context: ..

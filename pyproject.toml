@@ -5,13 +5,15 @@ description = "trawellcare Python workspace"
 requires-python = ">=3.12"
 dependencies = [
     "integration",
+    "tc-platform",
 ]
 
 [tool.uv.sources]
 integration = { workspace = true }
+tc-platform = { workspace = true }
 
 [tool.uv.workspace]
-members = ["libs/tc_common", "services/integration"]
+members = ["libs/tc_common", "services/integration", "services/platform"]
 
 [tool.uv]
 default-groups = ["dev"]
@@ -19,4 +21,5 @@ default-groups = ["dev"]
 [dependency-groups]
 dev = [
     "integration[dev]",
+    "tc-platform[dev]",
 ]

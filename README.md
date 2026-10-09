@@ -1,6 +1,6 @@
 # TravelCare (trawellcare)
 
-Health-travel platform MVP. This repository currently ships the **integration service** first: multi-vendor flight travel (Akbar Travels / Benzy B2B API) and email/SMS notifications.
+Health-travel platform MVP. This repository ships the **integration** service (travel vendors and notifications) and the **platform** service (identity, cases, care plans, and quotes).
 
 Broader architecture and journey design live under [`docs/`](docs/) (see [`docs/trawellCareArch_v1.md`](docs/trawellCareArch_v1.md) and [`docs/lld.md`](docs/lld.md)). Platform, admin, and front-end services are planned; not in this repo yet.
 
@@ -9,6 +9,7 @@ Broader architecture and journey design live under [`docs/`](docs/) (see [`docs/
 | Path | Purpose |
 |------|---------|
 | [`services/integration`](services/integration) | FastAPI app (port **8004**), schema `integration` |
+| [`services/platform`](services/platform) | FastAPI app (port **8001**), schema `platform` — identity, cases, quotes |
 | [`libs/tc_common`](libs/tc_common) | Shared errors and problem JSON |
 | [`infra/docker-compose.yml`](infra/docker-compose.yml) | Postgres, Mailpit, integration API + worker |
 | [`docs/`](docs/) | Architecture and LLD |
@@ -86,7 +87,18 @@ Startup also runs seed data (vendors `akbar` + `manual`, notification providers,
 uv run --directory services/integration uvicorn app.main:app --reload --host 127.0.0.1 --port 8004
 ```
 
-### 6. Run the notification / travel worker
+### 6. Run the platform API
+
+```bash
+uv run --directory services/platform alembic upgrade head
+uv run --directory services/platform uvicorn app.main:app --reload --host 127.0.0.1 --port 8001
+```
+
+Swagger: **http://127.0.0.1:8001/docs**. Customer and staff routes use `Authorization: Bearer`. The chatbot handoff `POST /v1/enquiries` uses `X-Api-Key` = `PLATFORM_SERVICE_API_KEY`. Phone OTP calls integration `POST /v1/sms/otp` unless `OTP_DELIVERY=log`.
+
+Seeded staff (password `STAFF_SEED_PASSWORD`, authenticator secret `STAFF_TOTP_SECRET`): `ops@trawellcare.local`, `cm@trawellcare.local`, `curator@trawellcare.local`, `doctor@trawellcare.local`, `auditor@trawellcare.local`. Replace those secrets before any shared environment.
+
+### 7. Run the notification / travel worker
 
 Notifications and in-flight booking polls are **async**. In another terminal:
 
@@ -94,7 +106,7 @@ Notifications and in-flight booking polls are **async**. In another terminal:
 uv run --directory services/integration python -m app.worker
 ```
 
-### 7. (Optional) Mailpit — email in the browser
+### 8. (Optional) Mailpit — email in the browser
 
 For local email (no real inbox):
 
@@ -215,7 +227,8 @@ Use this before pilot or production.
 
 ### Not implemented in this repo yet
 
-- [ ] Platform, commerce, vault, assistant, admin services
+- [x] Platform service (`services/platform`, port 8001) — identity, cases, care plans, quotes
+- [ ] Commerce, vault, assistant, admin services
 - [ ] Patient/admin front ends (`apps/web`, `apps/admin`)
 - [ ] CRM sync, Redis event bus between services
 - [ ] Resend HTTP adapter (DB row exists; use SMTP/SendGrid today)
