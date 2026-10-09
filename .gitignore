@@ -7,6 +7,9 @@ secrets/
 *.key
 credentials.json
 *credentials*
+.git-credentials
+.github-token
+*.pat
 
 # Local docs (not pushed to GitHub)
 docs/
