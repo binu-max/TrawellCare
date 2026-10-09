@@ -23,4 +23,16 @@ CREATE SCHEMA IF NOT EXISTS platform AUTHORIZATION platform_user;
 GRANT ALL ON SCHEMA platform TO platform_user;
 GRANT ALL PRIVILEGES ON DATABASE trawellcare TO platform_user;
 
+DO $$
+BEGIN
+    CREATE ROLE vault_user LOGIN PASSWORD 'vault';
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END
+$$;
+
+CREATE SCHEMA IF NOT EXISTS vault AUTHORIZATION vault_user;
+GRANT ALL ON SCHEMA vault TO vault_user;
+GRANT ALL PRIVILEGES ON DATABASE trawellcare TO vault_user;
+
 CREATE DATABASE trawellcare_test OWNER integration_user;

@@ -1,6 +1,6 @@
 # TravelCare (TrawellCare)
 
-Health-travel platform monorepo: **integration** (travel vendors + notifications) and **platform** (identity, cases, quotes, engagement).
+Health-travel platform monorepo: **integration**, **platform**, and **vault** (document metadata and signed access).
 
 Architecture notes live locally under `docs/` (gitignored on GitHub). Each service has its own README and env template.
 
@@ -10,7 +10,8 @@ Architecture notes live locally under `docs/` (gitignored on GitHub). Each servi
 |------|---------|
 | [`services/integration`](services/integration) | Port **8004**, schema `integration` — [README](services/integration/README.md) |
 | [`services/platform`](services/platform) | Port **8001**, schema `platform` — [README](services/platform/README.md) |
-| [`libs/tc_common`](libs/tc_common) | Shared errors and problem JSON |
+| [`services/vault`](services/vault) | Port **8003**, schema `vault` — [README](services/vault/README.md) |
+| [`libs/tc_common`](libs/tc_common) | Shared errors, problem JSON, JWT verify |
 | [`infra/docker-compose.yml`](infra/docker-compose.yml) | Postgres, Mailpit, both APIs and workers |
 | [`.env.example`](.env.example) | Combined env template for repo-root `.env` |
 
@@ -28,21 +29,24 @@ docker compose -f infra/docker-compose.yml up -d postgres   # optional
 
 uv run --directory services/integration alembic upgrade head
 uv run --directory services/platform alembic upgrade head
+uv run --directory services/vault alembic upgrade head
 ```
 
-**Run locally (four terminals):**
+**Run locally (five terminals):**
 
 ```bash
 uv run --directory services/integration uvicorn app.main:app --reload --port 8004
 uv run --directory services/integration python -m app.worker
 uv run --directory services/platform uvicorn app.main:app --reload --port 8001
 uv run --directory services/platform python -m app.worker
+uv run --directory services/vault uvicorn app.main:app --reload --port 8003
 ```
 
 | Service | Swagger |
 |---------|---------|
 | Integration | http://127.0.0.1:8004/docs (`X-Api-Key`) |
 | Platform | http://127.0.0.1:8001/docs (`Bearer` or `X-Api-Key` for enquiries) |
+| Vault | http://127.0.0.1:8003/docs (`Bearer`) |
 
 **Full stack in Docker:**
 
@@ -67,6 +71,7 @@ Shared database URL example:
 ```bash
 uv run --directory services/integration pytest
 uv run --directory services/platform pytest
+uv run --directory services/vault pytest
 ```
 
 ## Stop local processes

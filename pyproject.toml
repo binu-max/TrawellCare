@@ -6,14 +6,16 @@ requires-python = ">=3.12"
 dependencies = [
     "integration",
     "tc-platform",
+    "tc-vault",
 ]
 
 [tool.uv.sources]
 integration = { workspace = true }
 tc-platform = { workspace = true }
+tc-vault = { workspace = true }
 
 [tool.uv.workspace]
-members = ["libs/tc_common", "services/integration", "services/platform"]
+members = ["libs/tc_common", "services/integration", "services/platform", "services/vault"]
 
 [tool.uv]
 default-groups = ["dev"]
@@ -22,4 +24,5 @@ default-groups = ["dev"]
 dev = [
     "integration[dev]",
     "tc-platform[dev]",
+    "tc-vault[dev]",
 ]
